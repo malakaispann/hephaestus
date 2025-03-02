@@ -3,7 +3,6 @@ import os
 from typing import Any, Union
 from pathlib import Path
 
-
 PathLike = Union[str, Path, os.PathLike]
 
 

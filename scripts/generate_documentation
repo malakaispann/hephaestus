@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import logging
 import os
 import sys
 import textwrap
@@ -9,14 +8,17 @@ import textwrap
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parents[1]))
-from hephaestus._internal.meta import Paths
-from hephaestus.io.file import create_directory
-from hephaestus.io.logging import get_logger, configure_root_logger
-from hephaestus.io.subprocess import run_command, command_successful
+from hephaestus._internal import meta, scripts
+from hephaestus.io import (
+    command_successful,
+    create_directory,
+    get_logger,
+    run_command,
+)
 
 # Constants
 VERSION = "1.0.0"
-LOG_FILE = Path(Paths.LOGS, "GenerateDocumentation.log")
+LOG_FILE = Path(meta.Paths.LOGS, "GenerateDocumentation.log")
 
 fail = lambda: exit(1)
 logger = get_logger(__name__)
@@ -27,10 +29,10 @@ def generate_rst_files():
     logger.info("Creating ReStructured Text Files.")
     cmd = [
         "sphinx-apidoc",
-        str(Paths.LIB),
+        str(meta.Paths.LIB),
         "**/tests/**",
         "--output-dir",
-        str(Path(Paths.SPHINX, "source")),
+        str(Path(meta.Paths.SPHINX, "source")),
         "--implicit-namespaces",  # Who wants to stick __init__.py everywhere.,
         "--module-first",  # Generate module documentation before generating submodule docs.
         "--separate",  # Generate a file for each module
@@ -44,7 +46,7 @@ def generate_html():
     logger.info("Creating HTML Files.")
 
     # Ensure docs folder exists.
-    docs_dir = str(create_directory(Paths.DOCS))
+    docs_dir = str(create_directory(meta.Paths.DOCS))
 
     # Make commands to generate HTML. Note, we change the output dir of HTML files.
     cmd_sets = [
@@ -60,7 +62,7 @@ def generate_html():
 
     # Change directory to avoid OS-specific login.
     current_dir = Path.cwd()
-    os.chdir(Paths.SPHINX)
+    os.chdir(meta.Paths.SPHINX)
 
     # Run commands changing back to previous directory on failure.
     for cmd_set in cmd_sets:
@@ -97,41 +99,12 @@ def run():
         ),
     )
 
-    parser.add_argument(
-        "--disable-color",
-        help="Disable colored output to standard out",
-        required=False,
-        dest="disable_color",
-        action="store_true",
-    )
-    parser.add_argument(
-        "-vv",
-        "--verbose",
-        help="output debug messages",
-        required=False,
-        dest="verbose",
-        action="store_true",
-    )
-    parser.add_argument(
-        "-v",
-        "--version",
-        help="print the version of the script",
-        required=False,
-        dest="version",
-        action="store_true",
-    )
+    scripts.add_common_script_args(parser=parser)
 
     args = parser.parse_args()
 
-    if args.version:
-        print(VERSION)
-        exit(0)
-
-    configure_root_logger(
-        min_level=logging.DEBUG if args.verbose else logging.INFO,
-        log_file=LOG_FILE,
-        enable_color=(not args.disable_color),
-    )
+    scripts.check_version_arg(script_args=args, script_version=VERSION)
+    scripts.set_script_logger(script_args=args, script_log_file=LOG_FILE)
 
     _check_sphinx_installation()
     generate_rst_files()

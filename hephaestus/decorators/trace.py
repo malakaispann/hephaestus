@@ -2,8 +2,8 @@ from collections import namedtuple
 from queue import Queue
 from typing import Callable
 
-from hephaestus.io.logging import get_logger
-from hephaestus.patterns.singleton import Singleton
+from hephaestus.io import get_logger
+from hephaestus.patterns import Singleton
 
 _logger = get_logger(__name__)
 
@@ -14,7 +14,7 @@ MethodTrace = namedtuple("MethodTrace", ["name", "args", "kwargs", "retval"])
 
 
 class TraceQueue(Queue, metaclass=Singleton):
-    """An object capable of storing"""
+    """An object capable of storing method calls and other trace information."""
 
     def get(self) -> MethodTrace:
         """Returns the last trace.
@@ -34,39 +34,38 @@ class TraceQueue(Queue, metaclass=Singleton):
             _ = self.get()
 
 
-def track(to_track: Callable) -> Callable:
+def trace(to_trace: Callable) -> Callable:
     """Records method call for later examination.
 
     Args:
-        to_track : the method to track.
+        to_trace : the method to trace.
 
     Returns:
-        The passed method with minor modification pre and post-call
-        to support tracking capability.
+        The passed method with minor modifications to support tracing capability.
 
     Note:
         Can be used as a decorator:
 
-        @track
+        @trace
         def print_copy(*args):
             ...
 
         Or like a regular method:
 
-        print_copy = track(to_track=print_copy)
+        print_copy = trace(to_trace=print_copy)
 
     """
 
     def wrapper(*args, **kwargs):
         """Forward all method parameters to wrapped method."""
         _logger.debug(
-            f"Traced method: {to_track.__name__}, Args: {args}, Keyword Args: {kwargs}"
+            f"Traced method: {to_trace.__name__}, Args: {args}, Keyword Args: {kwargs}"
         )
 
         # Call method and store in queue.
-        retval = to_track(*args, **kwargs)
+        retval = to_trace(*args, **kwargs)
         TraceQueue().put(
-            MethodTrace(name=to_track.__name__, args=args, kwargs=kwargs, retval=retval)
+            MethodTrace(name=to_trace.__name__, args=args, kwargs=kwargs, retval=retval)
         )
 
         _logger.debug(f"Method returned. Return value: {retval}")

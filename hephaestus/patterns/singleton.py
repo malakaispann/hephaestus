@@ -1,10 +1,13 @@
 import threading
 
-from typing import Any, Type
+from typing import Callable, Union
 
-from hephaestus.io.logging import get_logger
+from hephaestus.io import get_logger
 
 _logger = get_logger(__name__)
+
+
+Lockable = Union[type, Callable[[], object]]
 
 
 class Singleton(type):
@@ -26,20 +29,20 @@ class Singleton(type):
     ##
     # Constants
     ##
-    __DEFAULT_LOCK_TYPE: Type = threading.Lock
+    __DEFAULT_LOCK_TYPE: Lockable = threading.Lock
     __LOCK_ATTR_KEY: str = "_lock"
     __INSTANCE_ATTR_KEY: str = "_instance"
 
     # Public Access
-    DEFAULT_LOCK_TYPE: Type = __DEFAULT_LOCK_TYPE
+    DEFAULT_LOCK_TYPE: Lockable = __DEFAULT_LOCK_TYPE
     LOCK_ATTR_KEY: str = __LOCK_ATTR_KEY
     INSTANCE_ATTR_KEY: str = __INSTANCE_ATTR_KEY
 
     ##
     # "Private" Class Vars
     ##
-    __lock_type: Type = __DEFAULT_LOCK_TYPE
-    __shared_instances = {}
+    __lock_type: Lockable = __DEFAULT_LOCK_TYPE
+    __shared_instances: dict[str, object] = {}
     __singleton_lock = __lock_type()
 
     def __call__(cls, *args, **kwargs):
@@ -94,67 +97,67 @@ class Singleton(type):
 
         return getattr(cls, cls.__INSTANCE_ATTR_KEY)
 
+    @staticmethod
+    def get_lock_type() -> Lockable:
+        """Returns the current lock type for all Singleton objects.
 
-def get_lock_type() -> Type:
-    """Returns the current lock type for all Singleton objects.
+        Returns:
+            The class used to enable atomic operations for all Singleton subclasses
+            as well as the Singleton instantiation logic.
+        """
+        return Singleton._Singleton__lock_type
 
-    Returns:
-        The class used to enable atomic operations for all Singleton subclasses
-        as well as the Singleton instantiation logic.
-    """
-    return Singleton._Singleton__lock_type
+    @staticmethod
+    def set_lock_type(lock_type: Lockable) -> bool:
+        """Sets the lock type for all Singleton objects.
 
+        Args:
+            lock_type: a Lockable that, when called/instantiated, can enable atomic operations for shared data.
+                Must support use as a context manager (i.e. `with lock_type():`).
 
-def set_lock_type(lock_type: Type) -> bool:
-    """Sets the lock type for all Singleton objects.
+        Returns:
+            True if the pass lock_type was set; False otherwise.
 
-    Args:
-        lock_type: a type that, when instantiated, can enable atomic operations for shared data.
-            Must support use as a context manager (i.e. `with lock_type():`).
+        Note:
+            This should be called before any Singleton instantiation due to ensure safe operations.
+        """
 
-    Returns:
-        True if the pass lock_type was set; False otherwise.
+        # Ensure we were given a class.
+        if not isinstance(lock_type, Lockable):
+            _logger.warning(
+                f"Lock Type {str(lock_type)} is not a class. Keeping current lock type: {Singleton.get_lock_type().__name__}"
+            )
 
-    Note:
-        This should be called before any Singleton instantiation due to ensure safe operations.
-    """
+        # Test with context management. This is what the singleton logic uses and probs what extenders will use.
+        try:
+            with lock_type():
+                pass
+        except Exception:
+            _logger.warning(
+                f"Custom lock type cannot be used with context management. Keeping current lock type: {Singleton.get_lock_type().__name__}. "
+            )
+            return False
 
-    # Ensure we were given a class.
-    if not isinstance(lock_type, Type):
-        _logger.warning(
-            f"Lock Type {str(lock_type)} is not a class. Keeping current lock type: {get_lock_type().__name__}"
-        )
+        # Change lock type.
+        current_singleton_lock = (
+            Singleton._Singleton__singleton_lock
+        )  # Assignment to a local var here is not actually necessary, just helps me sleep better at night.
+        with current_singleton_lock:
+            Singleton._Singleton__lock_type = lock_type
+            Singleton._Singleton__singleton_lock = lock_type()
 
-    # Test with context management. This is what the singleton logic uses and probs what extenders will use.
-    try:
-        with lock_type():
-            pass
-    except Exception:
-        _logger.warning(
-            f"Custom lock type cannot be used with context management. Keeping current lock type: {get_lock_type().__name__}. "
-        )
-        return False
+        return True
 
-    # Change lock type.
-    current_singleton_lock = (
-        Singleton._Singleton__singleton_lock
-    )  # Assignment to a local var here is not actually necessary, just helps me sleep better at night.
-    with current_singleton_lock:
-        Singleton._Singleton__lock_type = lock_type
-        Singleton._Singleton__singleton_lock = lock_type()
+    @staticmethod
+    def clear_all():
+        """Destroys all known Singleton instances."""
+        _logger.debug("Clearing all known Singleton instances.")
+        with Singleton._Singleton__singleton_lock:
 
-    return True
+            shared_instances = Singleton._Singleton__shared_instances
 
-
-def clear_all():
-    """Destroys all known Singleton instances."""
-    _logger.debug("Clearing all known Singleton instances.")
-    with Singleton._Singleton__singleton_lock:
-
-        shared_instances = Singleton._Singleton__shared_instances
-
-        for cls in shared_instances.keys():
-            if getattr(cls, Singleton.INSTANCE_ATTR_KEY):
-                with getattr(cls, Singleton.LOCK_ATTR_KEY):
-                    setattr(cls, Singleton.INSTANCE_ATTR_KEY, None)
-                    shared_instances[cls] = None
+            for cls in shared_instances.keys():
+                if getattr(cls, Singleton.INSTANCE_ATTR_KEY):
+                    with getattr(cls, Singleton.LOCK_ATTR_KEY):
+                        setattr(cls, Singleton.INSTANCE_ATTR_KEY, None)
+                        shared_instances[cls] = None

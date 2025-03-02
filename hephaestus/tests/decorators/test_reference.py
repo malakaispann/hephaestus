@@ -1,5 +1,5 @@
 import pytest
-from hephaestus.decorators.reference import (
+from hephaestus.decorators import (
     reference,
     reference_getter,
     reference_ignore,

@@ -3,7 +3,8 @@ import subprocess
 
 from typing import Any, Callable
 
-from hephaestus.common.exceptions import LoggedException, _InternalError
+from hephaestus.common import LoggedException
+from hephaestus.common.exceptions import _InternalError
 from hephaestus.io.logging import get_logger
 
 _logger = get_logger(__name__)

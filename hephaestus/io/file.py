@@ -1,8 +1,6 @@
-import os
 from pathlib import Path
 
-from hephaestus.common.exceptions import LoggedException
-from hephaestus.common.types import PathLike
+from hephaestus.common import LoggedException, PathLike
 from hephaestus.io.logging import get_logger
 
 _logger = get_logger(__name__)
@@ -10,11 +8,6 @@ _logger = get_logger(__name__)
 ##
 # Public
 ##
-
-# Defined in hephaestus.common.types
-"""
-PathLike: A string, Path, or similar representation of a file path.
-"""
 
 
 class FileError(LoggedException):

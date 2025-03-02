@@ -1,4 +1,4 @@
-from hephaestus.io.logging import get_logger
+from hephaestus.io import get_logger
 from hephaestus.testing.swte import StrConsts
 
 

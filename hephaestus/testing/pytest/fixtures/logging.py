@@ -5,9 +5,9 @@ import _pytest
 
 from pathlib import Path
 
-import hephaestus.testing.swte as swte
-from hephaestus.common.constants import CharConsts
-from hephaestus.io.logging import get_logger
+from hephaestus.testing import swte
+from hephaestus.common import CharConsts
+from hephaestus.io import get_logger
 
 
 @pytest.fixture(scope="module", autouse=True)

@@ -3,13 +3,12 @@ import pytest
 import sys
 import time
 
-import hephaestus.testing.swte as swte
+from hephaestus.testing import swte
 
 from collections import namedtuple
 from typing import Any
 
-from hephaestus.io.stream import LogStreamer, NullStreamer
-from hephaestus.io.logging import get_logger, LogFormatter
+from hephaestus.io import get_logger, LogFormatter, LogStreamer, NullStreamer
 
 # PyTest Devs think everything should be private for some reason.
 import _pytest

@@ -30,7 +30,7 @@ All modules are still referenced like so:
 ```
 # myfile.py
 
-from hephaestus.common.constants import AnsiColors
+from hephaestus.common import AnsiColors
 from hephaestus.testing.pytest.fixtures import *
 
 ```

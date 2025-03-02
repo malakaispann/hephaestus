@@ -3,7 +3,7 @@ import inspect
 from logging import getLogger
 from typing import Any, Callable, Type
 
-from hephaestus.common.exceptions import LoggedException
+from hephaestus.common import LoggedException
 
 _logger = getLogger(__name__)
 
@@ -68,6 +68,8 @@ def __method_wrapper(getter: Callable, if_none: Callable, method_name: str) -> C
 # Public
 ##
 class ReferenceError(LoggedException):
+    """Indicates an error has occurred while attempting setup a reference."""
+
     pass
 
 

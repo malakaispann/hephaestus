@@ -3,10 +3,10 @@ import threading
 from queue import Queue
 from typing import Callable
 
-from hephaestus.io.logging import get_logger
-from hephaestus.patterns.singleton import set_lock_type, get_lock_type, Singleton
+from hephaestus.io import get_logger
+from hephaestus.patterns import Singleton
 from hephaestus.testing.swte import StrConsts
-from hephaestus.testing.mock.threading import MockLock
+from hephaestus.testing.mock import MockLock
 
 # Annotations
 import logging
@@ -32,7 +32,7 @@ class TestSingleton:
 
         # We'll want to use an abortable mutex to ensure test suite it affected.
         _logger.debug("Changing singleton to use MockLock class.")
-        assert set_lock_type(lock_type=MockLock)
+        assert Singleton.set_lock_type(lock_type=MockLock)
 
         # Share data between threads using atomic operations.
         shared_queue = Queue()
@@ -60,8 +60,8 @@ class TestSingleton:
         fail_timer.cancel()
 
         # Revert any changes made during test
-        assert set_lock_type(lock_type=Singleton.DEFAULT_LOCK_TYPE) and (
-            get_lock_type() is Singleton.DEFAULT_LOCK_TYPE
+        assert Singleton.set_lock_type(lock_type=Singleton.DEFAULT_LOCK_TYPE) and (
+            Singleton.get_lock_type() is Singleton.DEFAULT_LOCK_TYPE
         )
         assert shared_queue.empty() == expect_deadlock
 

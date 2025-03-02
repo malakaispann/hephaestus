@@ -6,8 +6,7 @@ import time
 from pathlib import Path
 from typing import Callable, Optional
 
-from hephaestus.common.types import PathLike
-from hephaestus.common.constants import AnsiColors
+from hephaestus.common import AnsiColors, PathLike
 
 """
     A wrapper for the logging interface that ensures a consistent logging experience.
@@ -20,16 +19,19 @@ from hephaestus.common.constants import AnsiColors
 _original_record_factory = logging.getLogRecordFactory()
 
 
-def record_factory(*args, **kwargs):
+def _record_factory(*args, **kwargs):
     record = _original_record_factory(*args, **kwargs)
     if color_override := kwargs.get("color", None):
         record.color = color_override
     return record
 
 
-logging.setLogRecordFactory(record_factory)
+logging.setLogRecordFactory(_record_factory)
 
 
+##
+# Formatting
+##
 class FormatOptions:
     """Format Options for a logging.Formatter.
 
@@ -45,9 +47,6 @@ class FormatOptions:
         self.style = style
 
 
-##
-# Formatting
-##
 class LogFormatter(logging.Formatter):
     """Defines common message format for files.
 
@@ -148,7 +147,6 @@ class LogFormatter(logging.Formatter):
 ##
 # Log Configuration
 ##
-
 __last_sh = None
 __last_fh = None
 
@@ -186,9 +184,9 @@ def configure_root_logger(
     """Configures logger that ever other logger propagates up to.
 
     Args:
-        min_level: the minimum log level to pipe to stdout. Defaults to logging.INFO.
+        min_level: the minimum log level to pipe to stderr. Defaults to logging.INFO.
         log_file: the absolute path to the log file to generate. Defaults to None.
-        enable_color: whether output to stdout should be colored. Defaults to LogFormatter.DEFAULT_ENABLE_COLOR.
+        enable_color: whether output to stderr should be colored. Defaults to LogFormatter.DEFAULT_ENABLE_COLOR.
         time_expr: a method that converts the seconds since the epoch to a time.struct_time
             object. Defaults to LogFormatter.DEFAULT_TIME_EXPR.
         fmt_opts: a mapping of the format options to use for each level. Defaults to LogFormatter.DEFAULT_FMT_OPTS.
@@ -214,7 +212,7 @@ def configure_root_logger(
 
     # Pipe to standard out at specified level.
     if __last_sh is None:
-        __last_sh = logging.StreamHandler(sys.stdout)
+        __last_sh = logging.StreamHandler(sys.stderr)
         handlers.append(__last_sh)
     __last_sh.setLevel(min_level)  # allow level updating on the fly.
 

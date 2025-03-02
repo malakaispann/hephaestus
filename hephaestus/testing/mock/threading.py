@@ -1,10 +1,10 @@
 from typing import Any
 
 import logging
-from hephaestus.common.exceptions import LoggedException
+from hephaestus.common import LoggedException
 
 
-class MockMutexAbort(LoggedException):
+class MockLockAbort(LoggedException):
     def __init__(self, msg: Any):
         super().__init__(msg=msg, log_level=logging.WARNING, stack_level=3)
 
@@ -27,7 +27,7 @@ class MockLock:
             # Entirety of abort lock. Nice and simple.
             if self._abort_operation:
                 self._abort_operation = False
-                raise MockMutexAbort("Aborting operation requiring lock.")
+                raise MockLockAbort("Aborting operation requiring lock.")
 
             continue
 
@@ -50,4 +50,4 @@ class MockLock:
 
     def __exit__(self, exception_type, *args, **kwargs) -> bool:
         self.release()
-        return exception_type is MockMutexAbort
+        return exception_type is MockLockAbort

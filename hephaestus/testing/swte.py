@@ -1,4 +1,4 @@
-from hephaestus.io.logging import get_logger
+from hephaestus.io import get_logger
 
 _logger = get_logger(__name__)
 MAX_PRINT_WIDTH = 80
