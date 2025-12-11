@@ -1,0 +1,24 @@
+name: "Project Setup"
+description: "Install UV and dependencies for application."
+
+inputs:
+  install-type:
+    description: "Type of dependencies to install (dev or prod)"
+    required: false
+    default: "dev"
+
+runs:
+  using: "composite"
+  steps:
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.9.14"
+      
+      - name: Set up Python
+        shell: bash
+        run: uv python install
+
+      - name: Install dependencies
+        shell: bash
+        run: make install-${{ inputs.install-type }}
