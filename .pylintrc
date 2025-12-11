@@ -1,0 +1,24 @@
+[MESSAGES CONTROL]
+# Enable all rules, then disable noisy or commonly unwanted ones.
+disable=
+    unnecessary-ellipsis,
+
+[BASIC]
+variable-rgx=[a-z_][a-z0-9_]{2,15}$
+argument-rgx=[a-z_][a-z0-9_]{2,15}$
+method-rgx=[a-z_][a-z0-9_]{2,50}$
+module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
+
+[DESIGN]
+max-args=10
+max-locals=15
+max-branches=5
+max-statements=50
+max-parents=7
+max-attributes=12
+
+[SIMILARITIES]
+min-similarity-lines=4
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes

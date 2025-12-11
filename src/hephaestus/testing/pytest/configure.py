@@ -6,7 +6,7 @@ import time
 from hephaestus.testing import swte
 
 from collections import namedtuple
-from typing import Any
+from typing import Any, Union
 
 from hephaestus.io import get_logger, LogFormatter, LogStreamer, NullStreamer
 
@@ -16,7 +16,6 @@ import _pytest.config
 import _pytest.nodes
 import _pytest.reports
 import _pytest.runner
-import _pytest.terminal
 
 """
 This module contains various configurations and custom hook implementations for PyTest.
@@ -145,7 +144,7 @@ def pytest_exception_interact(
 
 
 @pytest.hookimpl(wrapper=True, trylast=True)
-def pytest_report_teststatus(report: _pytest.reports.CollectReport | _pytest.reports.TestReport, config: _pytest.config.Config) -> _pytest.terminal.TestShortLogReport:  # type: ignore
+def pytest_report_teststatus(report: Union[_pytest.reports.CollectReport, _pytest.reports.TestReport], config: _pytest.config.Config) -> _pytest.terminal.TestShortLogReport:  # type: ignore
     """Logs and saves the result of the test."""
     global test_execution_time
     global test_results
@@ -197,7 +196,7 @@ def pytest_unconfigure(config: _pytest.config.Config):
     test_stats["Total Tests"] = sum(list(test_stats.values()))
     test_stats["Test Execution Time (s)"] = f"{test_execution_time: 3f}"
     test_stats["Total Execution Time (s)"] = (
-        f"{(time.time() - reporter._sessionstarttime): 3f}"
+        f"{(reporter._session_start.elapsed().seconds): 3f}"
     )
 
     # Log Stats
@@ -233,7 +232,7 @@ def pytest_unconfigure(config: _pytest.config.Config):
 
 @pytest.hookimpl
 def pytest_sessionfinish(
-    session: _pytest.main.Session, exitstatus: int | _pytest.config.ExitCode
+    session: _pytest.main.Session, exitstatus: Union[int, _pytest.config.ExitCode]
 ):
     """Returns the status of the program based on test failures."""
 
