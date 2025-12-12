@@ -1,5 +1,15 @@
 # Hephaestus
 
+** As of Dec 2025, this project is no maintained, nor available for installation through PyPi.**
+
+I made this decision for a few reasons:
+    1. Much of the code here isn't useful in the real world and contains many anti-patterns.
+    2. I wanted to free up the name hephaestus-lib for future use.
+    3. There's too much generality here. 
+        - Python library I make in the future (if any) will be much smaller and focused.
+    4. It'll be much easier to restart and salvage the good, rather than refactor. 
+
+
 ## Table of Contents
 1. [Objective](#objective)
 2. [Use](#use)
@@ -21,30 +31,11 @@ Started in December 2024, well... technically, since about 2022.
 
 ## Use
 
-Project is free for use and uploaded to [PyPi under the name hephaestus-lib](https://pypi.org/project/hephaestus-lib/).
-
-Unfortunately, someone already took the name Hephaestus on PyPi so...
-
-All modules are still referenced like so:
-
-```
-# myfile.py
-
-from hephaestus.common.constants import AnsiColors
-from hephaestus.testing.pytest.fixtures import *
-
-```
-
 While not intentionally developed to be cross-platform, most of the stuff in here is. It just didn't cost that that much more effort 
 or brainpower to avoid.
 
 This library is not intended to be used as a template or guide, but it can definitely can be used as "inspiration." Please link back to this repo or [MalakaiSpann.com](https://malakaispann.com) if you do.
 
-### Installation
-
-```bash
-pip install hephaestus-lib
-```
 
 ### Testing
 
